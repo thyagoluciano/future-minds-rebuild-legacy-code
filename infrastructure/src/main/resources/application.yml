@@ -6,3 +6,19 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/sales_manager}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+outbox:
+  poll:
+    interval-ms: ${OUTBOX_POLL_INTERVAL_MS:5000}
+
+cms.url: ${CMS_URL:http://localhost:8090}
+pcm.url: ${PCM_URL:http://localhost:8091}
+cim.url: ${CIM_URL:http://localhost:8092}
+coupon.url: ${COUPON_URL:http://localhost:8093}
+mgm.url: ${MGM_URL:http://localhost:8094}
+com.url: ${COM_URL:http://localhost:8095}
