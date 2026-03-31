@@ -13,7 +13,13 @@ class PurchaseOrderTypeTest {
     }
 
     @Test
-    fun `should have exactly 2 type values`() {
-        assertEquals(2, PurchaseOrderType.values().size)
+    fun `should have all defined type values`() {
+        val values = PurchaseOrderType.values()
+        assertTrue(values.contains(PurchaseOrderType.JOIN))
+        assertTrue(values.contains(PurchaseOrderType.CHANGE))
+        assertTrue(values.contains(PurchaseOrderType.BUY))
+        assertTrue(values.contains(PurchaseOrderType.COUPON))
+        assertTrue(values.contains(PurchaseOrderType.NORMAL))
+        assertTrue(values.contains(PurchaseOrderType.ONBOARDING))
     }
 }
