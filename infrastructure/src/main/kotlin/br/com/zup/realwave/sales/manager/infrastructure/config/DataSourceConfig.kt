@@ -4,16 +4,13 @@ import br.com.zup.realwave.sales.manager.infrastructure.multitenant.TenantRoutin
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import javax.sql.DataSource
 
 @Configuration
-class DataSourceConfig(
-    private val dataSourceProperties: DataSourceProperties
-) {
+class DataSourceConfig {
 
     @Value("\${spring.datasource.url:\${DB_URL:jdbc:postgresql://localhost:5432/sales_manager}}")
     private lateinit var url: String
