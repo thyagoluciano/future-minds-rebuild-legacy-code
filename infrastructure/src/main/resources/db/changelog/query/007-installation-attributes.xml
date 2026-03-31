@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="007-create-installation-attributes" author="sales-manager">
+        <createTable tableName="installation_attributes">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="purchase_order_id" type="VARCHAR(255)">
+                <constraints nullable="false" foreignKeyName="fk_installation_attributes_purchase_order" references="purchase_order(id)"/>
+            </column>
+            <column name="product_type_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attributes" type="JSONB"/>
+        </createTable>
+
+        <addUniqueConstraint
+            tableName="installation_attributes"
+            columnNames="purchase_order_id, product_type_id"
+            constraintName="uq_installation_attributes_purchase_order_product_type"/>
+    </changeSet>
+
+</databaseChangeLog>

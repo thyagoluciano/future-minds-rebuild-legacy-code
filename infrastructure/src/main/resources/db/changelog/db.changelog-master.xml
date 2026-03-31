@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <include file="db/changelog/event-store/001-domain-events.xml"/>
+    <include file="db/changelog/event-store/002-outbox.xml"/>
+    <include file="db/changelog/query/001-purchase-order.xml"/>
+    <include file="db/changelog/query/002-order-item.xml"/>
+    <include file="db/changelog/query/003-payment.xml"/>
+    <include file="db/changelog/query/004-discounts.xml"/>
+    <include file="db/changelog/query/005-freight.xml"/>
+    <include file="db/changelog/query/006-customer-order.xml"/>
+    <include file="db/changelog/query/007-installation-attributes.xml"/>
+</databaseChangeLog>

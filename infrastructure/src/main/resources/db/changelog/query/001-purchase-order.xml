@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="001-create-purchase-order" author="sales-manager">
+        <createTable tableName="purchase_order">
+            <column name="id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="customer" type="JSONB"/>
+            <column name="callback" type="JSONB"/>
+            <column name="payment" type="JSONB"/>
+            <column name="freight" type="JSONB"/>
+            <column name="coupon" type="JSONB"/>
+            <column name="customer_order" type="JSONB"/>
+            <column name="protocol" type="JSONB"/>
+            <column name="subscription_id" type="VARCHAR(255)"/>
+            <column name="channel_create" type="JSONB"/>
+            <column name="channel_checkout" type="JSONB"/>
+            <column name="segmentation" type="JSONB"/>
+            <column name="on_boarding_sale" type="JSONB"/>
+            <column name="mgm" type="JSONB"/>
+            <column name="sales_force" type="JSONB"/>
+            <column name="reason" type="JSONB"/>
+            <column name="security_code_informed" type="JSONB"/>
+            <column name="created_at" type="VARCHAR(50)"/>
+            <column name="updated_at" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
