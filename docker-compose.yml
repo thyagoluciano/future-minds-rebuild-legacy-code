@@ -39,5 +39,77 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
+  command-app:
+    build:
+      context: .
+      dockerfile: command-app/Dockerfile
+    container_name: sales-manager-command
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/sales_manager
+      DB_USERNAME: sales_manager
+      DB_PASSWORD: sales_manager
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/realwave
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  query-app:
+    build:
+      context: .
+      dockerfile: query-app/Dockerfile
+    container_name: sales-manager-query
+    ports:
+      - "8180:8180"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/sales_manager
+      DB_USERNAME: sales_manager
+      DB_PASSWORD: sales_manager
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/realwave
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8180/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  consumer-app:
+    build:
+      context: .
+      dockerfile: consumer-app/Dockerfile
+    container_name: sales-manager-consumer
+    ports:
+      - "8082:8082"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/sales_manager
+      DB_USERNAME: sales_manager
+      DB_PASSWORD: sales_manager
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/realwave
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   postgres_data:
