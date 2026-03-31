@@ -18,6 +18,10 @@
             <groupId>br.com.zup.realwave</groupId>
             <artifactId>sales-manager-infrastructure</artifactId>
         </dependency>
+        <dependency>
+            <groupId>br.com.zup.realwave</groupId>
+            <artifactId>sales-manager-query</artifactId>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

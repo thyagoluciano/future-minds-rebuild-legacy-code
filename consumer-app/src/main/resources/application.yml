@@ -4,3 +4,28 @@ server:
 spring:
   application:
     name: sales-manager-consumer
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/sales_manager}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8090/realms/realwave}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: sm-purchase-order-status
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+tenant:
+  prefix: rw_sm_
+
+kafka:
+  topic:
+    purchase-events: ${KAFKA_TOPIC_PURCHASE_EVENTS:rw_sm_purchase_events}
+  consumer:
+    group-id: ${KAFKA_CONSUMER_GROUP_ID:sm-purchase-order-status}
