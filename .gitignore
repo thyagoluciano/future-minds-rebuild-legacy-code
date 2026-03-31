@@ -1,0 +1,72 @@
+# Maven
+target/
+*.jar
+*.war
+*.ear
+*.class
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Kotlin / Java
+*.kotlin_module
+*.iml
+out/
+.gradle/
+build/
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iws
+*.ipr
+*.iml
+.idea_modules/
+
+# IDE - VS Code
+.vscode/
+*.code-workspace
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+.factorypath
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Logs
+*.log
+logs/
+
+# Spring Boot
+spring-shell.log
+application-local.properties
+application-local.yml
+
+# Testcontainers / Docker / Podman
+.testcontainers.properties
+
+# Env / secrets
+.env
+.env.*
+*.secret
+secrets/
+
+# Runtime
+*.pid
+*.sock
+
+# Liquibase
+*.liquibase.lock

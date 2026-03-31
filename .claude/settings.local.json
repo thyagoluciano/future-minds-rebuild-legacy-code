@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.github.com)",
+      "Bash(./gradlew *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(pwd)",
+      "Bash(mkdir -p *)",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  }
+}
