@@ -27,9 +27,8 @@ import br.com.zup.realwave.sales.manager.domain.event.PurchaseOrderStatusUpdated
 import br.com.zup.realwave.sales.manager.domain.event.PurchaseOrderSubscriptionUpdated
 import br.com.zup.realwave.sales.manager.domain.event.PurchaseOrderTypeUpdated
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.stereotype.Component
 import org.springframework.jdbc.core.JdbcTemplate
-import java.time.LocalDateTime
+import org.springframework.stereotype.Component
 
 @Component
 class PurchaseOrderEventHandlers(
@@ -98,25 +97,22 @@ class PurchaseOrderEventHandlers(
     fun on(event: PurchaseOrderItemAdded) {
         val item = event.item
         jdbcTemplate.update(
-            """INSERT INTO order_item (id, purchase_order_id, catalog_offer_id, catalog_offer_type,
-               price_currency, price_amount, price_scale, validity_period, validity_duration,
-               validity_unlimited, offer_fields, custom_fields, offer_items, prices_per_period, quantity, created)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?::jsonb, ?::jsonb, ?::jsonb, ?, now())""",
+            """INSERT INTO order_item (id, purchase_order_id, catalog_offer_id,
+               price_currency, price_amount, price_scale,
+               validity_period, validity_duration, validity_unlimited,
+               offer_items, prices_per_period, created)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?::jsonb, now())""",
             item.id.value,
             event.id.value,
-            item.catalogOfferId.value,
-            item.catalogOfferType.value,
+            item.catalogOfferId,
             item.price.currency,
             item.price.amount,
             item.price.scale,
-            item.validity.period,
-            item.validity.duration,
-            item.validity.unlimited,
-            toJson(item.offerFields),
-            toJson(item.customFields),
+            item.validity?.period,
+            item.validity?.duration,
+            item.validity?.unlimited ?: false,
             toJson(item.offerItems),
-            toJson(item.pricesPerPeriod),
-            item.quantity.value
+            toJson(item.pricesPerPeriod)
         )
     }
 
@@ -132,25 +128,20 @@ class PurchaseOrderEventHandlers(
         val item = event.item
         jdbcTemplate.update(
             """UPDATE order_item
-               SET catalog_offer_id = ?, catalog_offer_type = ?, offer_fields = ?::jsonb,
-                   custom_fields = ?::jsonb, offer_items = ?::jsonb, updated = now(),
+               SET catalog_offer_id = ?, offer_items = ?::jsonb, updated = now(),
                    price_currency = ?, price_amount = ?, price_scale = ?,
                    validity_period = ?, validity_duration = ?, validity_unlimited = ?,
-                   prices_per_period = ?::jsonb, quantity = ?
+                   prices_per_period = ?::jsonb
                WHERE purchase_order_id = ? AND id = ?""",
-            item.catalogOfferId.value,
-            item.catalogOfferType.value,
-            toJson(item.offerFields),
-            toJson(item.customFields),
+            item.catalogOfferId,
             toJson(item.offerItems),
             item.price.currency,
             item.price.amount,
             item.price.scale,
-            item.validity.period,
-            item.validity.duration,
-            item.validity.unlimited,
+            item.validity?.period,
+            item.validity?.duration,
+            item.validity?.unlimited ?: false,
             toJson(item.pricesPerPeriod),
-            item.quantity.value,
             event.id.value,
             item.id.value
         )
@@ -161,7 +152,7 @@ class PurchaseOrderEventHandlers(
         // Update payment description on purchase_order
         jdbcTemplate.update(
             "UPDATE purchase_order SET payment_description = ?, updated = now() WHERE id = ?",
-            event.payment.description?.value,
+            event.payment.description,
             purchaseOrderId
         )
         // UPSERT payment methods: delete existing then insert new
@@ -169,16 +160,15 @@ class PurchaseOrderEventHandlers(
         event.payment.methods.forEachIndexed { index, method ->
             jdbcTemplate.update(
                 """INSERT INTO payment (purchase_order_id, payment_method, payment_method_id,
-                   price_currency, price_amount, price_scale, installments, custom_fields, payment_order, created)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, now())""",
+                   price_currency, price_amount, price_scale, installments, payment_order, created)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, now())""",
                 purchaseOrderId,
-                method.method,
-                method.methodId,
-                method.price?.currency,
-                method.price?.amount,
-                method.price?.scale,
+                method.type,
+                method.cardToken,
+                method.totalValue?.currency,
+                method.totalValue?.amount,
+                method.totalValue?.scale,
                 method.installments,
-                toJson(method.customFields),
                 index
             )
         }
@@ -195,8 +185,8 @@ class PurchaseOrderEventHandlers(
                VALUES (?, ?::jsonb, ?, ?, ?, ?, ?, now())""",
             purchaseOrderId,
             toJson(freight.address),
-            freight.type.value,
-            freight.deliveryTotalTime.value,
+            freight.type,
+            freight.deliveryEstimateBusinessDays,
             freight.price.currency,
             freight.price.amount,
             freight.price.scale
@@ -205,9 +195,8 @@ class PurchaseOrderEventHandlers(
 
     fun on(event: PurchaseOrderCouponUpdated) {
         jdbcTemplate.update(
-            "UPDATE purchase_order SET coupon_code = ?, coupon_custom_fields = ?::jsonb, updated = now() WHERE id = ?",
+            "UPDATE purchase_order SET coupon_code = ?, updated = now() WHERE id = ?",
             event.coupon.code,
-            toJson(event.coupon.customFields),
             event.id.value
         )
     }
@@ -231,7 +220,7 @@ class PurchaseOrderEventHandlers(
     fun on(event: PurchaseOrderSubscriptionUpdated) {
         jdbcTemplate.update(
             "UPDATE purchase_order SET subscription_id = ?, updated = now() WHERE id = ?",
-            event.subscription.id,
+            event.subscriptionId.value,
             event.id.value
         )
     }
@@ -239,7 +228,7 @@ class PurchaseOrderEventHandlers(
     fun on(event: PurchaseOrderSegmentationUpdated) {
         jdbcTemplate.update(
             "UPDATE purchase_order SET segmentation = ?::jsonb, updated = now() WHERE id = ?",
-            toJson(event.segmentation.query),
+            toJson(event.segmentation.customFields),
             event.id.value
         )
     }
@@ -249,7 +238,7 @@ class PurchaseOrderEventHandlers(
             """UPDATE purchase_order
                SET on_boarding_sale_offer_id = ?, on_boarding_sale_custom_fields = ?::jsonb, updated = now()
                WHERE id = ?""",
-            event.onBoardingSale.offer.value,
+            null,
             toJson(event.onBoardingSale.customFields),
             event.id.value
         )
@@ -274,8 +263,8 @@ class PurchaseOrderEventHandlers(
     fun on(event: PurchaseOrderSalesForceUpdated) {
         jdbcTemplate.update(
             "UPDATE purchase_order SET sales_force_id = ?, sales_force_name = ?, updated = now() WHERE id = ?",
-            event.salesForce.id,
-            event.salesForce.name,
+            event.salesForce.agentId,
+            event.salesForce.supervisorId,
             event.id.value
         )
     }
@@ -318,30 +307,26 @@ class PurchaseOrderEventHandlers(
 
     fun on(event: PurchaseOrderCustomerOrderUpdated) {
         val purchaseOrderId = event.id.value
-        // UPSERT customer_order
-        event.customerOrder?.let { co ->
-            val stepsJson = toJson(co.steps)
-            jdbcTemplate.update(
-                """INSERT INTO customer_order (purchase_order_id, customer_order_id, status, steps)
-                   VALUES (?, ?, ?, ?::jsonb)
-                   ON CONFLICT (purchase_order_id)
-                   DO UPDATE SET customer_order_id = ?, status = ?, steps = ?::jsonb""",
-                purchaseOrderId, co.customerOrderId, co.status, stepsJson,
-                co.customerOrderId, co.status, stepsJson
-            )
-        }
-        // UPDATE purchase_order status and channel if provided
+        val co = event.customerOrder
+        jdbcTemplate.update(
+            """INSERT INTO customer_order (purchase_order_id, customer_order_id, status, steps)
+               VALUES (?, ?, ?, ?::jsonb)
+               ON CONFLICT (purchase_order_id)
+               DO UPDATE SET customer_order_id = ?, status = ?, steps = ?::jsonb""",
+            purchaseOrderId, co.id, null, null,
+            co.id, null, null
+        )
         val statusName = event.status?.name
-        val channelValue = event.channel?.value
-        if (statusName != null || channelValue != null) {
+        val channelJson = event.channel?.let { toJson(it) }
+        if (statusName != null || channelJson != null) {
             jdbcTemplate.update(
                 """UPDATE purchase_order
                    SET status = COALESCE(?, status),
                        channel_checkout = COALESCE(?::jsonb, channel_checkout),
                        updated = now()
                    WHERE id = ?""",
-                statusName,
-                channelValue?.let { """{"value":"$it"}""" },
+                statusName as Any?,
+                channelJson as Any?,
                 purchaseOrderId
             )
         } else {
@@ -374,14 +359,13 @@ class PurchaseOrderEventHandlers(
         val purchaseOrderId = event.id.value
         // UPSERT customer_order if present
         event.customerOrder?.let { co ->
-            val stepsJson = toJson(co.steps)
             jdbcTemplate.update(
                 """INSERT INTO customer_order (purchase_order_id, customer_order_id, status, steps)
                    VALUES (?, ?, ?, ?::jsonb)
                    ON CONFLICT (purchase_order_id)
                    DO UPDATE SET customer_order_id = ?, status = ?, steps = ?::jsonb""",
-                purchaseOrderId, co.customerOrderId, co.status, stepsJson,
-                co.customerOrderId, co.status, stepsJson
+                purchaseOrderId, co.id, null, null,
+                co.id, null, null
             )
         }
         // UPDATE purchase_order status to CHECKED_OUT
@@ -397,16 +381,15 @@ class PurchaseOrderEventHandlers(
     fun on(event: PurchaseOrderCouponCreated) {
         jdbcTemplate.update(
             """INSERT INTO purchase_order (id, status, type, customer, callback, channel_create,
-               coupon_code, coupon_custom_fields, created, updated, version)
-               VALUES (?, ?, ?, ?, ?::jsonb, ?::jsonb, ?, ?::jsonb, now(), now(), 1)""",
+               coupon_code, created, updated, version)
+               VALUES (?, ?, ?, ?, ?::jsonb, ?::jsonb, ?, now(), now(), 1)""",
             event.id.value,
             "OPENED",
             event.type?.name,
             event.customer?.id,
             toJson(event.callback),
             toJson(event.channel),
-            event.coupon.code,
-            toJson(event.coupon.customFields)
+            event.coupon.code
         )
     }
 
